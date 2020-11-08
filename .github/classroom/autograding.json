@@ -1,0 +1,94 @@
+{
+  "tests": [  
+    {
+      "name": "Connects Successfully",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#processConnected test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 5
+    },
+    {
+      "name": "Disconnects Successfully",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#processDisconnected test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 5
+    },
+    {
+      "name": "Creates Workers Parent Znode",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#initialiseCreateWorkersZnode test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 10
+    },
+    {
+      "name": "Workers Parent Znode is of correct type",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#initialiseCreateWorkersZnodeMode test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 5
+    },
+    {
+      "name": "Doesn't Create Workers Parent Znode if Already Exists",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#initialiseCreateWorkersZnodeAlreadyExists test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 7
+    },
+    {
+      "name": "Initialise check workers",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#initialiseChecksWorkers test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 7
+    },
+    {
+      "name": "Launches Workers if Necessary",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#launchWorkersWhenNeeded test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 18
+    },
+    {
+      "name": "Doesn't Launch Workers if Not Necessary",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#dontLaunchWorkersWhenNotNeeded test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 12
+    },
+    {
+      "name": "Process Correct Event",
+      "setup": "",
+      "run": "cd cluster-healer;mvn -q -DskipTests=false -Dtest=ClusterHealerTest#processCorrectEvent test",
+      "input": "",
+      "output": "",
+      "comparison": "",
+      "timeout": 2,
+      "points": 6
+    }
+  ]
+}
