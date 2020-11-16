@@ -159,7 +159,7 @@ class ClusterHealerTest {
 
     // Make sure launchWorkersIfNecessary() is called if event is correct
     @Test
-    void processCorrectEvent() {
+    void processCorrectEvent() throws KeeperException, InterruptedException, IOException {
         ClusterHealer spyHealer = Mockito.spy(new ClusterHealer(3, PATH_TO_PROGRAM));
         ClusterHealer mockHealer = mock(ClusterHealer.class);
         doCallRealMethod().when(mockHealer).process(any(WatchedEvent.class));
