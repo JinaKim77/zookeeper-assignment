@@ -98,6 +98,7 @@ public class ClusterHealer implements Watcher {
             case NodeCreated:
                 try {
                     System.out.println("Check running workers");
+                    //Should call checkRunningWorkers when workers start or crash
                     checkRunningWorkers();
                 } catch (KeeperException e) {
                     e.printStackTrace();
@@ -127,13 +128,20 @@ public class ClusterHealer implements Watcher {
             //update workersNumber
             workersNumber+=1;
 
-            startWorker();
+            //Should start new worker when workers start or crash and there aren't enough workers
+            //startWorker();
 
             // watch the cluster to check if workers die
             // replacement workers should be started when workers die.
             // the number of running workers should always be the requested number
-        }
 
+
+            //Should start new worker when workers start or crash and there aren't enough workers
+            if(workersNumber <= numberOfWorkers)
+            {
+                startWorker();
+            }
+        }
     }
 
     /**
