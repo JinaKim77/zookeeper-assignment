@@ -22,8 +22,6 @@ public class ClusterHealer implements Watcher {
     // znode path
     public static final String PARENT_ZNODE = "/workers"; // Assign path to znode
 
-    private String currentZnodeName;
-
     // Constructor
     public ClusterHealer(int numberOfWorkers, String pathToProgram) {
         this.numberOfWorkers = numberOfWorkers;
@@ -43,11 +41,11 @@ public class ClusterHealer implements Watcher {
             System.out.println("The znode exists and the node version is " +
                     stat.getVersion());
         } else {
-            System.out.println("The znode does not exists");
+            System.out.println("The znode does not exists, so create it");
 
             //Then create parent znode here
             String znodeFullPath = zooKeeper.create(PARENT_ZNODE, new byte[]{}, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-            System.out.println("znode name " + znodeFullPath);
+            System.out.println("Parent znode name " + znodeFullPath);
         }
     }
 
@@ -108,6 +106,20 @@ public class ClusterHealer implements Watcher {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+
+                //Handle Zookeeper events related to Changes in the number of workers currently running.
+            case NodeDeleted:
+                try {
+                    System.out.println("Check if node deleted");
+                    checkRunningWorkers();
+                } catch (KeeperException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
         }
     }
 
@@ -119,8 +131,10 @@ public class ClusterHealer implements Watcher {
     public void checkRunningWorkers() throws KeeperException, InterruptedException, IOException {
         List<String> workerList = zooKeeper.getChildren(PARENT_ZNODE,this);
         int workersNumber = workerList.size();
+        int actualWorkers = 0;
 
-
+        //Check how many workers are currently running.
+        //If less than the required number, then start a new worker
         while(workersNumber <= numberOfWorkers){
             System.out.println("Currently there are " + workersNumber + " workers");
 
@@ -129,9 +143,21 @@ public class ClusterHealer implements Watcher {
 
             //update workersNumber
             workersNumber+=1;
+            actualWorkers++;
+            startWorker();
 
+            // watch the cluster to check if workers die
+            // replacement workers should be started when workers die.
+            // the number of running workers should always be the requested number
+        }
+        System.out.println("All workers are now " +actualWorkers);
+
+        if(actualWorkers<workersNumber)
+        {
+            System.out.println("It should be replacing worker here...");
             startWorker();
         }
+
     }
 
     /**
