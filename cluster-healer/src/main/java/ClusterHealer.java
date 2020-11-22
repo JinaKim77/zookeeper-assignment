@@ -3,6 +3,7 @@ import org.apache.zookeeper.data.Stat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class ClusterHealer implements Watcher {
@@ -41,11 +42,10 @@ public class ClusterHealer implements Watcher {
             System.out.println("The znode exists and the node version is " +
                     stat.getVersion());
         } else {
-            System.out.println("The znode does not exists");
+            System.out.println("The znode does not exists, create it");
 
             //Then create parent znode here
             String znodeFullPath = zooKeeper.create(PARENT_ZNODE, new byte[]{}, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-            System.out.println("Parent znode name " + znodeFullPath);
         }
     }
 
@@ -55,7 +55,7 @@ public class ClusterHealer implements Watcher {
     //method that will create the connection to zookeeper
     public void connectToZookeeper() throws IOException {
         //create a new zookeeper object and save it in the zookeeper variable
-        this.zooKeeper = new ZooKeeper(ZOOKEEPER_ADDRESS,SESSION_TIMEOUT, (Watcher) this);
+        this.zooKeeper = new ZooKeeper(ZOOKEEPER_ADDRESS, SESSION_TIMEOUT, this);
     }
 
     /**
@@ -84,7 +84,7 @@ public class ClusterHealer implements Watcher {
     public void process(WatchedEvent event) {
         switch (event.getType()) {
             case None:
-                if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
+                if (event.getState() == Event.KeeperState.SyncConnected) {
                     System.out.println("Successfully connected to Zookeeper");
                 } else {
                     synchronized (zooKeeper) {
@@ -94,10 +94,28 @@ public class ClusterHealer implements Watcher {
                 }
                 break;
 
-                //Handle Zookeeper events related to Changes in the number of workers currently running.
+            //Handle Zookeeper events related to Changes in the number of workers currently running.
+            case NodeChildrenChanged:
             case NodeCreated:
+            case NodeDeleted:
+
+                //Issued when the children of a watched znode are created or deleted.
+                if(event.getType() == Event.EventType.NodeChildrenChanged){
+                    System.out.println("change in children");
+                }
+
+                //Issued when a znode at a given path is created.
+                if(event.getType() == Event.EventType.NodeCreated){
+                    System.out.println("NodeCreated");
+                }
+
+                //Issued when a znode at a given path is deleted.
+                if(event.getType() == Event.EventType.NodeDeleted){
+                    System.out.println("NodeDeleted");
+                }
+
                 try {
-                    System.out.println("Check running workers");
+                    System.out.println("Check the number of workers currently running");
                     //Should call checkRunningWorkers when workers start or crash
                     checkRunningWorkers();
                 } catch (KeeperException e) {
@@ -107,7 +125,6 @@ public class ClusterHealer implements Watcher {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
         }
     }
 
@@ -115,32 +132,28 @@ public class ClusterHealer implements Watcher {
      * Checks how many workers are currently running.
      * If less than the required number, then start a new worker.
      */
-    //Check how many workers are currently running. If less than the required number, then start a new worker
+
     public void checkRunningWorkers() throws KeeperException, InterruptedException, IOException {
+        //To get all the children of znode.
         List<String> workerList = zooKeeper.getChildren(PARENT_ZNODE,this);
-        int workersNumber = workerList.size();
+        Collections.sort(workerList);
 
-        //Check how many workers are currently running.
-        //If less than the required number, then start a new worker
-        while(workersNumber <= numberOfWorkers){
-            System.out.println("Currently there are " + workersNumber + " workers");
+        //Just to check if it gets children
+        for(int i = 0; i < workerList.size(); i++) {
+            System.out.println("Print children's");
+            System.out.println(workerList.get(i));  //It doesn't seem to print this line, as there no children..why...
+        }
 
-            //update workersNumber
-            workersNumber+=1;
+        if (workerList.size() == 0) {
+            System.out.println("getChildren() returned empty list");
+        }
 
-            //Should start new worker when workers start or crash and there aren't enough workers
-            //startWorker();
+        //If less than the required number (when there aren't enough workers)
+        while(workerList.size() < numberOfWorkers){
+            System.out.println("Currently there are " + workerList.size() + " workers");
 
-            // watch the cluster to check if workers die
-            // replacement workers should be started when workers die.
-            // the number of running workers should always be the requested number
-
-
-            //Should start new worker when workers start or crash and there aren't enough workers
-            if(workersNumber <= numberOfWorkers)
-            {
-                startWorker();
-            }
+            //then start a new worker
+            startWorker();
         }
     }
 
