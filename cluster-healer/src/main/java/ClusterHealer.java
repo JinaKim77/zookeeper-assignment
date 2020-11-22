@@ -138,22 +138,25 @@ public class ClusterHealer implements Watcher {
         List<String> workerList = zooKeeper.getChildren(PARENT_ZNODE,this);
         Collections.sort(workerList);
 
-        //Just to check if it gets children
-        for(int i = 0; i < workerList.size(); i++) {
+        //Just to check if it gets children znode
+        for(int i = 1; i < workerList.size(); i++) {
             System.out.println("Print children's");
-            System.out.println(workerList.get(i));  //It doesn't seem to print this line, as there no children..why...
+            System.out.println(workerList.get(i));
         }
 
         if (workerList.size() == 0) {
             System.out.println("getChildren() returned empty list");
         }
 
-        //If less than the required number (when there aren't enough workers)
-        while(workerList.size() < numberOfWorkers){
+        while(workerList.size() <= numberOfWorkers){
             System.out.println("Currently there are " + workerList.size() + " workers");
 
-            //then start a new worker
-            startWorker();
+            //If less than the required number (when there aren't enough workers)
+            if(workerList.size() < numberOfWorkers)
+            {
+                //then start a new worker
+                //startWorker();
+            }
         }
     }
 
