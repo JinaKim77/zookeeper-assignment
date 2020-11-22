@@ -139,7 +139,7 @@ public class ClusterHealer implements Watcher {
         Collections.sort(workerList);
 
         //Just to check if it gets children znode
-        for(int i = 1; i < workerList.size(); i++) {
+        for(int i = 0; i < workerList.size(); i++) {
             System.out.println("Print children's");
             System.out.println(workerList.get(i));
         }
@@ -148,14 +148,13 @@ public class ClusterHealer implements Watcher {
             System.out.println("getChildren() returned empty list");
         }
 
-        while(workerList.size() <= numberOfWorkers){
+        if(workerList.size() <= numberOfWorkers){
             System.out.println("Currently there are " + workerList.size() + " workers");
 
             //If less than the required number (when there aren't enough workers)
-            if(workerList.size() < numberOfWorkers)
-            {
+            if(workerList.size() < numberOfWorkers){
                 //then start a new worker
-                //startWorker();
+                startWorker();
             }
         }
     }
